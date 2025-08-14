@@ -10,7 +10,7 @@ venv\Scripts\activate
 source venv/bin/activate
 
 3. Install Dependencies
-pip install django python-decouple google-generativeai
+pip install -r requirements.txt
 
 4. Environment Configuration
 Create a .env file in the project root directory:
