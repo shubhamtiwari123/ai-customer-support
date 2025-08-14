@@ -1,5 +1,5 @@
 import google.generativeai as genai
-from decouple import config  # Add this import
+from decouple import config  
 
 class GeminiAIService:
     def __init__(self):

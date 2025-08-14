@@ -25,7 +25,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write('Customer1 user already exists')
         
-        # Create agent user
+        # Create agent 
         if not User.objects.filter(username='agent2').exists():
             agent_user = User.objects.create_user(
                 username='agent1',  
