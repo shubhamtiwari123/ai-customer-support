@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
@@ -12,11 +11,9 @@ from .forms import TicketForm, ReplyForm
 from .services.ai_service import GeminiAIService
 import json
 
+@login_required
 def dashboard(request):
     """Main dashboard that redirects based on authentication and user role"""
-    if not request.user.is_authenticated:
-        return redirect('login')
-    
     # Check if user is an agent (staff or in agent group)
     if request.user.is_staff or request.user.groups.filter(name='Agent').exists():
         return redirect('agent_dashboard')

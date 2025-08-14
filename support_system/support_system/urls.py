@@ -21,7 +21,9 @@ from tickets import views as ticket_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('tickets.urls')),
+    path('', ticket_views.custom_login, name='home'),  
     path('login/', ticket_views.custom_login, name='login'),
     path('logout/', ticket_views.custom_logout, name='logout'),
+    path('dashboard/', ticket_views.dashboard, name='dashboard'),  
+    path('tickets/', include('tickets.urls')),  
 ]
