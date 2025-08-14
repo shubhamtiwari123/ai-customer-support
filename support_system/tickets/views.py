@@ -14,6 +14,7 @@ import json
 @login_required
 def dashboard(request):
     """Main dashboard that redirects based on authentication and user role"""
+    # Check if user is an agent (staff or in agent group)
     if request.user.is_staff or request.user.groups.filter(name='Agent').exists():
         return redirect('agent_dashboard')
     else:
@@ -22,6 +23,7 @@ def dashboard(request):
 @login_required
 def customer_dashboard(request):
     """Customer dashboard showing their tickets"""
+    # Ensure only customers can access this
     if request.user.is_staff or request.user.groups.filter(name='Agent').exists():
         return redirect('agent_dashboard')
     
@@ -40,6 +42,7 @@ def agent_dashboard(request):
 @login_required
 def create_ticket(request):
     """Create a new support ticket (customers only)"""
+    # Ensure only customers can create tickets
     if request.user.is_staff or request.user.groups.filter(name='Agent').exists():
         messages.error(request, "Agents cannot create tickets.")
         return redirect('agent_dashboard')

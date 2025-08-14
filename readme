@@ -40,3 +40,15 @@ Agent: username: agent1, password: password123
 7. Run the Development Server
 python manage.py runserver
 The application will be available at http://127.0.0.1:8000/
+
+routes
+/ - Landing page (Login)
+/login/ - User login pa
+
+/customer/ - Customer dashboard (view all your tickets)
+/create-ticket/ - Create new support ticket
+/tickets/{id}/ - View specific ticket details
+
+/agent/ - Agent dashboard (view pending tickets)
+/tickets/{id}/ - View and respond to tickets
+/ai-response/{id}/ - Generate AI response for tickets (POST only)

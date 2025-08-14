@@ -42,29 +42,75 @@
                 {% endif %}
             </div>
         </div>
+        
+       
+        <div class="d-flex gap-2">
+            {% if is_agent %}
+                <a href="{% url 'agent_dashboard' %}" class="btn btn-secondary">Back to Agent Dashboard</a>
+            {% else %}
+                <a href="{% url 'customer_dashboard' %}" class="btn btn-secondary">Back to My Tickets</a>
+            {% endif %}
+        </div>
     </div>
 
     <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5>Respond to Ticket</h5>
+        {% if is_agent %}
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>Respond to Ticket</h5>
+                </div>
+                <div class="card-body">
+                    <button id="generateAI" class="btn btn-info btn-sm mb-3 w-100">
+                        🤖 Generate AI Response
+                    </button>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea id="reply-message" class="form-control" name="message" rows="6" placeholder="Type your response here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Send Reply</button>
+                    </form>
+                </div>
             </div>
-            <div class="card-body">
-                <button id="generateAI" class="btn btn-info btn-sm mb-3 w-100">
-                    🤖 Generate AI Response
-                </button>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <textarea id="reply-message" class="form-control" name="message" rows="6" placeholder="Type your response here..."></textarea>
+        {% else %}
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>Ticket Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <span class="badge bg-{% if ticket.status == 'pending' %}warning{% else %}success{% endif %} fs-6 p-2">
+                            {{ ticket.get_status_display }}
+                        </span>
+                        <hr>
+                        {% if ticket.status == 'pending' %}
+                            <p class="text-muted">Your ticket is being reviewed by our support team. You will receive a response soon.</p>
+                        {% else %}
+                            <p class="text-success">Our team has responded to your ticket. Please check the replies above.</p>
+                        {% endif %}
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Send Reply</button>
-                </form>
+                </div>
             </div>
-        </div>
+            
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6>Need More Help?</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid">
+                        <a href="{% url 'create_ticket' %}" class="btn btn-outline-primary mb-2">Create New Ticket</a>
+                        <small class="text-muted">If you have a different issue, please create a new ticket.</small>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
+
 
 <div class="modal fade" id="loadingModal" tabindex="-1">
     <div class="modal-dialog modal-sm">
@@ -81,8 +127,17 @@
 {% endblock %}
 
 {% block scripts %}
+{% if is_agent %}
 <script>
 document.getElementById('generateAI').addEventListener('click', function() {
+    const button = this;
+    const originalText = button.innerHTML;
+    
+
+    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Generating...';
+    button.disabled = true;
+    
+    
     const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
     modal.show();
     
@@ -93,19 +148,50 @@ document.getElementById('generateAI').addEventListener('click', function() {
             'X-CSRFToken': '{{ csrf_token }}'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         modal.hide();
         if (data.response) {
             document.getElementById('reply-message').value = data.response;
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                AI response generated successfully! You can edit it before sending.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
+        } else if (data.error) {
+            alert('Error: ' + data.error);
         } else {
             alert('Error generating AI response');
         }
     })
     .catch(error => {
         modal.hide();
-        alert('Error: ' + error);
+        console.error('Error:', error);
+        alert('Error generating AI response: ' + error.message);
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
     });
 });
+
+setTimeout(function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        if (alert.classList.contains('show')) {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 150);
+        }
+    });
+}, 5000);
 </script>
+{% endif %}
 {% endblock %}
